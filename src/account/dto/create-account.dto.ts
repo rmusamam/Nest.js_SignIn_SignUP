@@ -1,1 +1,5 @@
-export class CreateAccountDto {}
+export class CreateAccountDto {
+    email:string
+    name:string
+    password:string
+}
