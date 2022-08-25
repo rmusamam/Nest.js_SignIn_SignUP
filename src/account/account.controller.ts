@@ -1,9 +1,19 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Res,
+  Delete,
+  Req,
+} from '@nestjs/common';
 import { AccountService } from './account.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { LoginAccountDto } from './dto/login-account.dto';
-import * as bcrypt from 'bcrypt'
-
+import * as bcrypt from 'bcrypt';
+import express, { Request, response, Response } from 'express';
 
 @Controller('account')
 export class AccountController {
@@ -11,35 +21,28 @@ export class AccountController {
 
   @Post('/register')
   async create(@Body() createAccountDto: CreateAccountDto) {
-    const password= createAccountDto.password
-    const salt =await bcrypt.genSalt()
-    const hash= await bcrypt.hash(password,salt)
-    createAccountDto.password=hash
+    const password = createAccountDto.password;
+    const salt = await bcrypt.genSalt();
+    const hash = await bcrypt.hash(password, salt);
+    createAccountDto.password = hash;
     return this.accountService.create(createAccountDto);
   }
 
   @Post('/login')
-  async login(@Body() loginAccountDto:LoginAccountDto){
-      return this.accountService.login(loginAccountDto)
+  async login(
+    @Body() loginAccountDto: LoginAccountDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+     const token=await this.accountService.login(loginAccountDto);
+     console.log("returned token in login controller: ",token);
+     
+      response.cookie('token', token)
+     return token 
   }
 
-  // @Get()
-  // findAll() {
-  //   return this.accountService.findAll();
-  // }
-
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.accountService.findOne(+id);
-  // }
-
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateAccountDto: UpdateAccountDto) {
-  //   return this.accountService.update(+id, updateAccountDto);
-  // }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.accountService.remove(+id);
-  // }
+  @Get('/cookies')
+  findAll(@Req() request: Request) {
+    console.log('the cookies req token:',request.cookies.token.access_token);
+    
+  }
 }

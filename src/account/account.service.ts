@@ -1,4 +1,4 @@
-import { HttpException, Injectable,forwardRef, Inject } from '@nestjs/common';
+import { HttpException, Injectable,forwardRef, Inject,Res } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { LoginAccountDto } from './dto/login-account.dto';
@@ -9,7 +9,8 @@ import {AuthService} from '../auth/auth.service'
 
 @Injectable()
 export class AccountService {
-  constructor( @Inject(forwardRef(() => AuthService))
+  // @Inject(forwardRef(() => AuthService))
+  constructor(
     @InjectModel('Account') private account: Model<AccountDocument>,private authService:AuthService
   ) {}
   async create(createAccountDto: CreateAccountDto) {
@@ -24,19 +25,23 @@ export class AccountService {
     console.log('this is email: ', email);
     console.log('this is password: ', pass);
 
-    const emailExist = await this.account.findOne({ email: email });
+    const emailExist = await this.account.findOne({email: email});
     console.log('password from DB: ', emailExist);
 
     if (!emailExist) {
       throw new HttpException('Email not found', 200);
     } else {
-      const password = await bcrypt.compare(pass, emailExist);
+      console.log('ema from DB: ', emailExist);
+      console.log('pas frosm DB: ', pass);
+
+      const password = await bcrypt.compare(pass, emailExist.password);
       console.log('when password is compared');
       
       if (password) {
         console.log('when password is matched');
         const token = await this.authService.login(emailExist)
-        console.log(token)
+
+        return (token)
       } else {
         throw new HttpException('password  not found', 200);
       }

@@ -10,8 +10,6 @@ console.log(PassportModule);
 
 @Module({  
   imports: [
-    // forwardRef(() => AccountModule),
-
     PassportModule,
     JwtModule.register({
       secret: jwtConstants.secret,
